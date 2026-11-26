@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#211c45">
+    <title>@ViewData["Title"] | SIGH</title>
+    <link rel="stylesheet" href="@Url.Content("~/Content/acceso.css")">
+    <script src="@Url.Content("~/Scripts/acceso.js")" defer></script>
+</head>
+<body>
+    <main class="portal">
+        <aside class="campus" aria-label="Edición inspirada en Monsters University">
+            <img class="mascota" src="@Url.Content("~/Resources/sullivan.png")" alt="Sullivan con bata médica y estetoscopio en el hospital" width="459" height="668">
+        </aside>
+        <section class="panel" aria-labelledby="titulo">
+            <div class="panel-contenido">
+                <div class="marca">
+                    <span class="escudo" aria-hidden="true">S</span>
+                    <div><strong>SIGH</strong><span>Gestión hospitalaria</span></div>
+                </div>
+                @RenderBody()
+            </div>
+        </section>
+    </main>
+</body>
+</html>

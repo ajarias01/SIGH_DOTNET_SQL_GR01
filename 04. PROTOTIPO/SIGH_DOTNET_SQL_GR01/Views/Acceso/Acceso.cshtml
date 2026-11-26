@@ -1,0 +1,30 @@
+@model AccesoFormulario
+@{
+    ViewData["Title"] = "Iniciar sesión";
+    var error = ViewData["Error"] as string;
+}
+<h1 id="titulo">Iniciar sesión</h1>
+<p class="introduccion">Ingresa tus credenciales para acceder al Sistema Integral de Gestión Hospitalaria.</p>
+<form action="@Url.Action("Ingresar", "Acceso")" method="post">
+    @Html.AntiForgeryToken()
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <p class="alerta" role="alert">@error</p>
+    }
+    <div class="campo">
+        <label for="nombre">Usuario</label>
+        <input id="nombre" name="nombre" value="@Model.Nombre" placeholder="Escribe tu usuario" autocomplete="username" maxlength="64" required>
+    </div>
+    <div class="campo">
+        <label for="clave">Contraseña</label>
+        <div class="entrada-clave">
+            <input id="clave" name="clave" type="password" placeholder="Escribe tu contraseña" autocomplete="current-password" maxlength="128" required>
+            <button type="button" class="ver-clave" aria-controls="clave" hidden>Mostrar</button>
+        </div>
+    </div>
+    <button class="accion accion-ingresar" type="submit">Ingresar <span aria-hidden="true">→</span></button>
+</form>
+<footer class="pie">
+    <span>SIGH · GRUPO 01</span>
+    <span>GESTIÓN HOSPITALARIA</span>
+</footer>

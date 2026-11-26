@@ -1,0 +1,102 @@
+@model PersonaVista
+@{
+    Layout = null;
+    var nuevo = string.IsNullOrEmpty(Model.Datos.Codigo);
+}
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mantenimiento de Personal | SIGH</title>
+    <link rel="stylesheet" href="@Url.Content("~/Content/departamentos.css")">
+    <link rel="stylesheet" href="@Url.Content("~/Content/personas.css")">
+    <script src="@Url.Content("~/Scripts/personas.js")" defer></script>
+</head>
+<body>
+<main class="gestion">
+    <header class="gestion-cabecera">
+        <div><p class="gestion-etiqueta">SIGH · SUBSISTEMA DE PERSONAL</p><h1>Mantenimiento de Personal</h1></div>
+        <nav class="gestion-navegacion" aria-label="Navegación principal">
+            <a class="enlace-personal" href="@Url.Action("Inicio", "Acceso")">Inicio</a>
+            <a class="enlace-personal" href="@Url.Action("Index", "Departamentos")">Departamentos</a>
+            <a class="enlace-personal" href="@Url.Action("Index", "Cargos")">Cargos</a>
+            <a class="enlace-personal" href="@Url.Action("Pdf", "Reportes", new { r = "personas" })" target="_blank" rel="noopener">Listado PDF</a>
+            <form action="@Url.Action("Salir", "Acceso")" method="post">@Html.AntiForgeryToken()<button class="accion" type="submit">Cerrar sesión</button></form>
+        </nav>
+    </header>
+    <div class="ficha-cuerpo">
+        @if (!string.IsNullOrEmpty(Model.Aviso)) { <p class="aviso" role="status">@Model.Aviso</p> }
+        @Html.ValidationSummary(false, "Revisa los datos de la ficha.", new { role = "alert", @class = "alerta" })
+        @if (Model.Bloqueado) { <p class="aviso">Pulsa Nuevo para registrar una persona o Listar para seleccionar una.</p> }
+        <form id="frmpersona" action="@Url.Action("Guardar", "Personas")" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.Datos.Codigo)
+            <input id="tab" type="hidden" name="tab" value="@Model.Tab">
+            <fieldset disabled="@Model.Bloqueado" class="ficha-datos">
+                <legend class="sr-only">Ficha de la persona</legend>
+                <section class="ficha-cabecera" aria-label="Datos de la persona">
+                    <div class="ficha-identidad">
+                        <div class="campo"><label for="codigo-visible">Código</label><input id="codigo-visible" value="@Model.Datos.Codigo" placeholder="Se genera al guardar" readonly></div>
+                        <div class="campo">@Html.LabelFor(m => m.Datos.Apellidos) @Html.TextBoxFor(m => m.Datos.Apellidos, new { maxlength = 50, required = "required" })</div>
+                        <div class="campo">@Html.LabelFor(m => m.Datos.Nombres) @Html.TextBoxFor(m => m.Datos.Nombres, new { maxlength = 50, required = "required" })</div>
+                    </div>
+                    <div class="ficha-foto">
+                        <img id="vista-foto" src="@(nuevo ? Url.Content("~/Resources/persona.svg") : Url.Action("Foto", "Personas", new { codigo = Model.Datos.Codigo }))" alt="Foto de la persona" width="160" height="160">
+                        <label for="foto">Foto PNG o JPG, hasta 2 MB</label><input id="foto" name="foto" type="file" accept="image/png,image/jpeg">
+                    </div>
+                </section>
+            </fieldset>
+            <div class="pestanas" role="tablist" aria-label="Datos de la persona" hidden>
+                <button type="button" role="tab" id="t-generales" aria-controls="generales" data-panel="generales">Datos generales</button>
+                <button type="button" role="tab" id="t-identificacion" aria-controls="identificacion" data-panel="identificacion">Identificación y contacto</button>
+            </div>
+            <fieldset disabled="@Model.Bloqueado" class="ficha-datos">
+                <legend class="sr-only">Información adicional</legend>
+                <section id="generales" class="panel-pestana" role="tabpanel" aria-labelledby="t-generales" tabindex="0">
+                    <h2>Datos generales</h2>
+                    <div class="ficha-rejilla">
+                        <div class="campo"><label for="Datos_Genero">Sexo</label>@Html.DropDownListFor(m => m.Datos.Genero, Model.Generos, "Selecciona", new { required = "required" })</div>
+                        <div class="campo"><label for="Datos_EstadoCivil">Estado civil</label>@Html.DropDownListFor(m => m.Datos.EstadoCivil, Model.EstadosCiviles, "Selecciona", new { required = "required" })</div>
+                        <div class="campo"><label for="Datos_FechaNacimiento">Fecha de nacimiento</label>@Html.TextBoxFor(m => m.Datos.FechaNacimiento, "{0:yyyy-MM-dd}", new { type = "date", required = "required", min = "1753-01-01", max = DateTime.Today.ToString("yyyy-MM-dd") })</div>
+                        <div class="campo"><label for="Datos_CargasFamiliares">Cargas familiares</label>@Html.TextBoxFor(m => m.Datos.CargasFamiliares, new { type = "number", min = 0, max = 99, required = "required" })</div>
+                        <div class="campo campo-marca"><label>@Html.CheckBoxFor(m => m.Datos.Discapacidad) Tiene discapacidad</label></div>
+                    </div>
+                </section>
+                <section id="identificacion" class="panel-pestana" role="tabpanel" aria-labelledby="t-identificacion" tabindex="0">
+                    <h2>Identificación y contacto</h2>
+                    <div class="ficha-rejilla">
+                        <div class="campo"><label for="Datos_TipoDocumento">Tipo de documento</label>@Html.DropDownListFor(m => m.Datos.TipoDocumento, new[] { new SelectListItem { Value = "CEDULA", Text = "Cédula" }, new SelectListItem { Value = "PASAPORTE", Text = "Pasaporte" } })</div>
+                        <div class="campo"><label for="Datos_Documento" id="etiqueta-documento">Número de documento</label>@Html.TextBoxFor(m => m.Datos.Documento, new { maxlength = 15, required = "required" })</div>
+                        <div class="campo"><label for="Datos_Email">Correo electrónico</label>@Html.TextBoxFor(m => m.Datos.Email, new { type = "email", maxlength = 50 })</div>
+                    </div>
+                </section>
+                <div class="botonera">
+                    <button class="accion" name="accion" value="guardar" type="submit">@(nuevo ? "Guardar" : "Actualizar")</button>
+                    @if (!nuevo) { <button class="accion accion-peligro" name="accion" value="borrar" type="submit" formnovalidate data-confirmar="¿Quieres eliminar a esta persona?">Borrar</button> }
+                </div>
+            </fieldset>
+            @if (!nuevo)
+            {
+                <p><a class="enlace-personal" href="@Url.Action("Pdf", "Reportes", new { r = "ficha", codigo = Model.Datos.Codigo })" target="_blank" rel="noopener">Imprimir ficha PDF</a></p>
+            }
+            <nav class="botonera ficha-nav" aria-label="Acciones de la ficha">
+                <a class="enlace-personal" href="@Url.Action("Index", new { modo = "nuevo", tab = Model.Tab })">Nuevo</a>
+                <a class="enlace-personal" href="@(Url.Action("Index", new { modo = "listar", codigo = Model.Datos.Codigo, tab = Model.Tab }) + "#listado")">Listar</a>
+                <a class="enlace-personal" href="@Url.Action("Index", new { nav = "primero", tab = Model.Tab })">Primero</a>
+                <a class="enlace-personal" href="@Url.Action("Index", new { nav = "anterior", codigo = Model.Datos.Codigo, tab = Model.Tab })">Anterior</a>
+                <a class="enlace-personal" href="@Url.Action("Index", new { nav = "siguiente", codigo = Model.Datos.Codigo, tab = Model.Tab })">Siguiente</a>
+                <a class="enlace-personal" href="@Url.Action("Index", new { nav = "ultimo", tab = Model.Tab })">Último</a>
+            </nav>
+        </form>
+        @if (Model.Personas.Length > 0)
+        {
+            <section id="listado"><h2>Personas registradas</h2><div class="gestion-tabla"><table>
+                <thead><tr><th scope="col">Código</th><th scope="col">Apellidos</th><th scope="col">Nombres</th><th scope="col">Documento</th><th scope="col">Acciones</th></tr></thead>
+                <tbody>@foreach (var persona in Model.Personas) { <tr><th scope="row">@persona.Codigo</th><td>@persona.Apellidos</td><td>@persona.Nombres</td><td>@persona.Documento</td><td class="gestion-acciones ficha-nav"><a href="@Url.Action("Index", new { codigo = persona.Codigo, tab = Model.Tab })">Seleccionar</a></td></tr> }</tbody>
+            </table></div></section>
+        }
+    </div>
+</main>
+</body>
+</html>

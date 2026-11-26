@@ -1,0 +1,23 @@
+.ficha-cuerpo { padding: clamp(18px, 4vw, 36px); }
+.ficha-datos { border: 0; padding: 0; margin: 0; min-width: 0; }
+.ficha-cabecera { display: grid; grid-template-columns: minmax(0, 1fr) 180px; gap: 28px; margin-bottom: 28px; }
+.ficha-foto img { display: block; object-fit: cover; border-radius: 16px; border: 1px solid #bacfc8; margin-bottom: 10px; }
+.ficha-foto label, .ficha-foto input { display: block; max-width: 100%; font-size: .8rem; margin-top: 8px; }
+.pestanas { display: flex; flex-wrap: wrap; gap: 6px; border-bottom: 2px solid #0e625c; }
+.pestanas[hidden] { display: none; }
+.pestanas button { border: 1px solid #bacfc8; border-bottom: 0; padding: 14px 18px; border-radius: 10px 10px 0 0; color: #123533; background: #e7f2f1; font: 600 .95rem "Segoe UI", sans-serif; cursor: pointer; }
+.pestanas button[aria-selected=true] { background: #0e625c; color: white; }
+.panel-pestana { padding: 24px 0; }
+.ficha-rejilla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.ficha-rejilla .campo + .campo { margin: 0; }
+.ficha-rejilla select { width: 100%; min-height: 49px; padding: 11px 13px; border: 1px solid #bacfc8; border-radius: 9px; background: white; color: #123533; font: inherit; }
+.campo-marca input { width: auto; min-height: 0; }
+.botonera { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin: 20px 0; }
+.botonera .accion { width: auto; margin: 0; }
+.aviso { padding: 14px; background: #e7f2f1; border-radius: 10px; }
+.validation-summary-valid { display: none; }
+.field-validation-error { color: #7e2537; }
+.input-validation-error { border-color: #7e2537 !important; }
+fieldset:disabled { opacity: .65; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+@media(max-width: 720px) { .ficha-cabecera, .ficha-rejilla { grid-template-columns: minmax(0, 1fr); } }

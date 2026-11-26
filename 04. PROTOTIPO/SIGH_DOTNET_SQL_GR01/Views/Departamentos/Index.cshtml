@@ -1,0 +1,109 @@
+@model DepartamentosVista
+@{
+    Layout = null;
+    var modo = Model.Modo;
+    var departamento = Model.Departamento;
+    var codigo = departamento == null ? "" : departamento.Codigo;
+    var descripcion = departamento == null ? "" : departamento.Descripcion;
+    var titulo = modo == "editar" ? "Editar departamento" :
+        modo == "eliminar" ? "Eliminar departamento" : "Nuevo departamento";
+}
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Departamentos | SIGH</title>
+    <link rel="stylesheet" href="@Url.Content("~/Content/departamentos.css")">
+</head>
+<body>
+    <main class="gestion">
+        <header class="gestion-cabecera">
+            <div>
+                <p class="gestion-etiqueta">SIGH · SUBSISTEMA DE PERSONAL</p>
+                <h1>Departamentos</h1>
+                <p class="gestion-texto">Administra el catálogo de departamentos del hospital.</p>
+            </div>
+            <nav class="gestion-navegacion" aria-label="Navegación principal">
+                <a class="enlace-personal" href="@Url.Action("Index", "Personas")">Personas</a>
+                <a class="enlace-personal" href="@Url.Action("Index", "Cargos")">Cargos</a>
+                <a class="enlace-personal" href="@Url.Action("Inicio", "Acceso")">Inicio</a>
+                <a class="enlace-personal" href="@Url.Action("Pdf", "Reportes", new { r = "departamentos" })" target="_blank" rel="noopener">Reporte PDF</a>
+                <form action="@Url.Action("Salir", "Acceso")" method="post">
+                    @Html.AntiForgeryToken()
+                    <button class="accion" type="submit">Cerrar sesión</button>
+                </form>
+            </nav>
+        </header>
+        <div class="gestion-contenido">
+            <section aria-labelledby="listado">
+                <h2 id="listado">Departamentos registrados</h2>
+                <div class="gestion-tabla">
+                    <table>
+                        <thead>
+                            <tr><th scope="col">Código</th><th scope="col">Descripción</th><th scope="col">Acciones</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Departamentos)
+                            {
+                                <tr>
+                                    <th scope="row">@item.Codigo</th>
+                                    <td>@(item.Descripcion ?? "—")</td>
+                                    <td class="gestion-acciones">
+                                        <a href="@(Url.Action("Index", new { modo = "editar", codigo = item.Codigo }) + "#operacion")">Editar</a>
+                                        <a class="peligro" href="@(Url.Action("Index", new { modo = "eliminar", codigo = item.Codigo }) + "#operacion")">Eliminar</a>
+                                    </td>
+                                </tr>
+                            }
+                            @if (Model.Departamentos.Length == 0)
+                            {
+                                <tr><td colspan="3">Aún no hay departamentos registrados.</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <section class="gestion-formulario" aria-labelledby="operacion">
+                <h2 id="operacion">@titulo</h2>
+                @if (!string.IsNullOrEmpty(Model.Error))
+                {
+                    <p class="alerta" role="alert">@Model.Error</p>
+                }
+                <form action="@Url.Action("Guardar")" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="modo" value="@modo">
+                    @if (modo == "eliminar")
+                    {
+                        <input type="hidden" name="codigo" value="@codigo">
+                        <p class="gestion-texto">¿Quieres eliminar el departamento <strong>@codigo</strong>?</p>
+                        <button class="accion accion-peligro" type="submit">Confirmar eliminación</button>
+                    }
+                    else
+                    {
+                        <div class="campo">
+                            <label for="codigo">Código</label>
+                            @if (modo == "editar")
+                            {
+                                <input id="codigo" name="codigo" value="@codigo" readonly>
+                            }
+                            else
+                            {
+                                <input id="codigo" name="codigo" value="@codigo" maxlength="3" pattern="[A-Za-z0-9]{1,3}" placeholder="Ej. RAD" required>
+                            }
+                        </div>
+                        <div class="campo">
+                            <label for="descripcion">Descripción <span>(opcional)</span></label>
+                            <input id="descripcion" name="descripcion" value="@descripcion" maxlength="50">
+                        </div>
+                        <button class="accion" type="submit">Guardar departamento</button>
+                    }
+                </form>
+                @if (modo != "crear")
+                {
+                    <a class="enlace-personal gestion-cancelar" href="@Url.Action("Index")">Cancelar</a>
+                }
+            </section>
+        </div>
+    </main>
+</body>
+</html>

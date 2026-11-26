@@ -1,0 +1,13 @@
+@{
+    ViewData["Title"] = "Sesión iniciada";
+}
+<p class="estado">✓ Sesión iniciada</p>
+<h1 id="titulo">Hola, @(User.Identity.Name).</h1>
+<p class="introduccion">Ingresaste al prototipo del Sistema Integral de Gestión Hospitalaria.</p>
+<p><a class="enlace-personal" href="@Url.Action("Index", "Departamentos")">Administrar departamentos →</a></p>
+<p><a class="enlace-personal" href="@Url.Action("Index", "Cargos")">Consultar cargos por departamento →</a></p>
+<p><a class="enlace-personal" href="@Url.Action("Index", "Personas")">Mantenimiento de personal →</a></p>
+<form action="@Url.Action("Salir", "Acceso")" method="post">
+    @Html.AntiForgeryToken()
+    <button class="accion" type="submit">Cerrar sesión <span aria-hidden="true">→</span></button>
+</form>

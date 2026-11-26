@@ -1,0 +1,131 @@
+@model CargosVista
+@{
+    Layout = null;
+    var actual = Model.Cargo;
+    var departamentoSeleccionado = actual == null ? Model.Filtro : actual.Departamento;
+    var codigo = actual == null ? "" : actual.Codigo;
+    var descripcion = actual == null ? "" : actual.Descripcion;
+    var titulo = Model.Modo == "editar" ? "Editar cargo" : Model.Modo == "eliminar" ? "Eliminar cargo" : "Nuevo cargo";
+    string siguiente;
+    Model.Siguientes.TryGetValue(departamentoSeleccionado ?? "", out siguiente);
+}
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Cargos | SIGH</title>
+    <link rel="stylesheet" href="@Url.Content("~/Content/departamentos.css")">
+    <script src="@Url.Content("~/Scripts/cargos.js")" defer></script>
+</head>
+<body class="pagina-cargos">
+    <main class="gestion">
+        <header class="gestion-cabecera">
+            <div>
+                <p class="gestion-etiqueta">SIGH · SUBSISTEMA DE PERSONAL</p>
+                <h1>Cargos</h1>
+                <p class="gestion-texto">Administra los cargos del hospital y su departamento.</p>
+            </div>
+            <nav class="gestion-navegacion" aria-label="Navegación principal">
+                <a class="enlace-personal" href="@Url.Action("Inicio", "Acceso")">Inicio</a>
+                <a class="enlace-personal" href="@Url.Action("Index", "Departamentos")">Departamentos</a>
+                <a class="enlace-personal" href="@Url.Action("Index", "Personas")">Personas</a>
+                <a class="enlace-personal" href="@Url.Action("Pdf", "Reportes", new { r = "cargos", departamento = Model.Filtro })" target="_blank" rel="noopener">Reporte PDF</a>
+                <form action="@Url.Action("Salir", "Acceso")" method="post">
+                    @Html.AntiForgeryToken()
+                    <button class="accion" type="submit">Cerrar sesión</button>
+                </form>
+            </nav>
+        </header>
+        <div class="gestion-contenido gestion-cargos">
+            <section aria-labelledby="listado">
+                <h2 id="listado">Cargos registrados</h2>
+                <form class="gestion-filtro" action="@Url.Action("Index", "Cargos")" method="get">
+                    <div class="campo">
+                        <label for="filtro">Filtrar por departamento</label>
+                        <select id="filtro" name="filtro">
+                            <option value="" selected="@(Model.Filtro == "")">Todos los departamentos</option>
+                            @foreach (var departamento in Model.Departamentos)
+                            {
+                                <option value="@departamento.Codigo" selected="@(Model.Filtro == departamento.Codigo)">@departamento.Codigo - @departamento.Descripcion</option>
+                            }
+                        </select>
+                    </div>
+                    <noscript><button class="accion" type="submit">Filtrar</button></noscript>
+                </form>
+                <div class="gestion-tabla">
+                    <table>
+                        <thead><tr><th scope="col">Código</th><th scope="col">Descripción</th><th scope="col">Departamento</th><th scope="col">Acciones</th></tr></thead>
+                        <tbody>
+                            @foreach (var cargo in Model.Cargos)
+                            {
+                                <tr data-departamento="@cargo.Departamento">
+                                    <th scope="row">@(cargo.Departamento + cargo.Codigo)</th>
+                                    <td>@(cargo.Descripcion ?? "—")</td>
+                                    <td>@cargo.Departamento @cargo.DepartamentoDescripcion</td>
+                                    <td class="gestion-acciones">
+                                        <a href="@(Url.Action("Index", new { modo = "editar", depto = cargo.Departamento, codigo = cargo.Codigo, filtro = Model.Filtro }) + "#operacion")">Editar</a>
+                                        <a class="peligro" href="@(Url.Action("Index", new { modo = "eliminar", depto = cargo.Departamento, codigo = cargo.Codigo, filtro = Model.Filtro }) + "#operacion")">Eliminar</a>
+                                    </td>
+                                </tr>
+                            }
+                            @if (Model.Cargos.Length == 0)
+                            {
+                                <tr><td colspan="4">No se encontraron cargos para esta selección.</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <section class="gestion-formulario" aria-labelledby="operacion">
+                <h2 id="operacion">@titulo</h2>
+                @if (!string.IsNullOrEmpty(Model.Error)) { <p class="alerta" role="alert">@Model.Error</p> }
+                <form action="@Url.Action("Guardar", "Cargos")" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="modo" value="@Model.Modo">
+                    <input type="hidden" name="filtro" value="@Model.Filtro">
+                    @if (Model.Modo == "eliminar")
+                    {
+                        <input type="hidden" name="departamento" value="@departamentoSeleccionado">
+                        <input type="hidden" name="codigo" value="@codigo">
+                        <p class="gestion-texto">¿Quieres eliminar el cargo <strong>@(departamentoSeleccionado + codigo)</strong>?</p>
+                        <button class="accion accion-peligro" type="submit">Confirmar eliminación</button>
+                    }
+                    else
+                    {
+                        <div class="campo">
+                            <label for="departamento">Departamento</label>
+                            @if (Model.Modo == "editar")
+                            {
+                                <input type="hidden" name="departamento" value="@departamentoSeleccionado">
+                                <input id="departamento" value="@departamentoSeleccionado" readonly>
+                            }
+                            else
+                            {
+                                <select id="departamento" name="departamento" required>
+                                    <option value="">Selecciona un departamento</option>
+                                    @foreach (var departamento in Model.Departamentos)
+                                    {
+                                        <option value="@departamento.Codigo" data-siguiente="@Model.Siguientes[departamento.Codigo]" selected="@(departamentoSeleccionado == departamento.Codigo)">@departamento.Codigo - @departamento.Descripcion</option>
+                                    }
+                                </select>
+                            }
+                        </div>
+                        <div class="campo">
+                            <label for="codigo">Código</label>
+                            @if (Model.Modo == "editar") { <input id="codigo" name="codigo" value="@codigo" readonly> }
+                            else { <input id="codigo" value="@siguiente" placeholder="Elige un departamento" readonly> }
+                        </div>
+                        <div class="campo">
+                            <label for="descripcion">Descripción <span>(opcional)</span></label>
+                            <input id="descripcion" name="descripcion" value="@descripcion" maxlength="50">
+                        </div>
+                        <button class="accion" type="submit">Guardar cargo</button>
+                    }
+                </form>
+                @if (Model.Modo != "crear") { <a class="enlace-personal gestion-cancelar" href="@Url.Action("Index", new { filtro = Model.Filtro })">Cancelar</a> }
+            </section>
+        </div>
+    </main>
+</body>
+</html>
